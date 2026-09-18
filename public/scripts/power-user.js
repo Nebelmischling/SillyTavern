@@ -514,7 +514,13 @@ function switchReducedMotion() {
         power_user.reduced_motion = true;
     }
     jQuery.fx.off = power_user.reduced_motion;
-    const overrideDuration = power_user.reduced_motion ? 0 : ANIMATION_DURATION_DEFAULT;
+    // On phones, shorten UI animation duration automatically (unless the user
+    // explicitly enabled "Reduced motion", which forces 0). This cuts CPU/GPU
+    // work during the initial paint and makes the UI feel snappier.
+    let overrideDuration = power_user.reduced_motion ? 0 : ANIMATION_DURATION_DEFAULT;
+    if (!power_user.reduced_motion && isMobile()) {
+        overrideDuration = Math.min(overrideDuration, 50);
+    }
     setAnimationDuration(overrideDuration);
     $('#reduced_motion').prop('checked', power_user.reduced_motion);
     $('#reduced_motion').prop('disabled', osReduced);

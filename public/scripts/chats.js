@@ -1907,6 +1907,20 @@ export function addDOMPurifyHooks() {
         }
     });
 
+    // Defer off-screen images and videos so the initial chat render does less work.
+    // This noticeably speeds up loading long chats on phones / when accessing a
+    // remote server, because the browser only downloads media as it scrolls into view.
+    DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+        if (node.tagName === 'IMG' || node.tagName === 'VIDEO') {
+            if (!node.hasAttribute('loading')) {
+                node.setAttribute('loading', 'lazy');
+            }
+            if (!node.hasAttribute('decoding')) {
+                node.setAttribute('decoding', 'async');
+            }
+        }
+    });
+
     DOMPurify.addHook('uponSanitizeAttribute', (node, data, config) => {
         if (!config.MESSAGE_SANITIZE) {
             return;

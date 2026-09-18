@@ -654,3 +654,49 @@
         height: unset;
     }
 }
+
+/* ===== Mobile performance optimizations ===== */
+/* This file is already wrapped in @media (max-width: 1000px), so every rule
+   below only affects phones / small tablets. Desktop behaviour is untouched. */
+
+@media screen and (max-width: 1000px) {
+    /* Skip layout & paint for messages scrolled out of view. The browser only
+       renders what is visible, so long chats paint much faster and scrolling
+       stays smooth. Real heights are remembered after a message is seen, which
+       avoids scroll jumps. */
+    .mes {
+        content-visibility: auto;
+        contain-intrinsic-size: 240px;
+        contain-intrinsic-size: auto 240px;
+    }
+
+    /* Large, always-visible surfaces use an expensive backdrop blur. Halving it
+       on mobile cuts GPU work with a barely-noticeable change in look. */
+    #send_form,
+    #right-nav-panel,
+    .drawer-content,
+    #character_popup,
+    #world_popup {
+        backdrop-filter: blur(calc(var(--SmartThemeBlurStrength) * 0.5));
+        -webkit-backdrop-filter: blur(calc(var(--SmartThemeBlurStrength) * 0.5));
+    }
+
+    /* Stop the page itself from scrolling / rubber-banding when the chat list
+       reaches its end (smoother feel, prevents accidental navigation gestures). */
+    #chat {
+        overscroll-behavior: contain;
+    }
+}
+
+/* Respect the OS "Reduce motion" accessibility setting everywhere: drop
+   animations/transitions so the UI feels instant and uses less CPU. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
